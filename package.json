@@ -1,0 +1,57 @@
+{
+    "version": "0.0.1",
+    "license": "MIT",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "engines": {
+        "node": ">=10"
+    },
+    "scripts": {
+        "dev": "tsdx watch",
+        "build": "tsdx build",
+        "lint": "tsdx lint",
+        "prepare": "tsdx build",
+        "size": "size-limit",
+        "analyze": "size-limit --why"
+    },
+    "peerDependencies": {},
+    "husky": {
+        "hooks": {
+            "pre-commit": "tsdx lint"
+        }
+    },
+    "prettier": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": true,
+        "trailingComma": "es5"
+    },
+    "name": "pat.js",
+    "author": "Kognise",
+    "module": "dist/pat.js.esm.js",
+    "size-limit": [
+        {
+            "path": "dist/pat.js.cjs.production.min.js",
+            "limit": "10 KB"
+        },
+        {
+            "path": "dist/pat.js.esm.js",
+            "limit": "10 KB"
+        }
+    ],
+    "devDependencies": {
+        "@size-limit/preset-small-lib": "^5.0.3",
+        "husky": "^7.0.2",
+        "size-limit": "^5.0.3",
+        "tsdx": "^0.14.1",
+        "tslib": "^2.3.1",
+        "typescript": "^4.4.2"
+    },
+    "dependencies": {
+        "isomorphic-fetch": "^3.0.0"
+    }
+}
