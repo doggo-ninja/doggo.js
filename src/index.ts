@@ -40,7 +40,7 @@ export class PatClient {
         this.baseUrl = baseUrl ?? 'https://pat.doggo.ninja'
     }
 
-    authenticate(token?: string) {
+    authenticate(token: string | undefined) {
         this.token = token
     }
 
