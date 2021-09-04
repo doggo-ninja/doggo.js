@@ -34,14 +34,10 @@ export type UsageInfo = {
 
 export class PatClient {
   private baseUrl: string;
-  private token?: string;
+  token?: string;
 
   constructor(baseUrl?: string) {
     this.baseUrl = baseUrl ?? 'https://pat.doggo.ninja';
-  }
-
-  authenticate(token: string | undefined) {
-    this.token = token;
   }
 
   async files(parent: string | undefined): Promise<File[]> {
@@ -114,6 +110,63 @@ export class PatClient {
     );
   }
 
+  async checkAuth(): Promise<boolean> {
+    try {
+      await this.makeRequest('get', '/v1/auth/check');
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async login(
+    username: string,
+    password: string
+  ): Promise<{ sessionToken: string }> {
+    return await this.makeRequest(
+      'post',
+      '/v1/auth/login',
+      {},
+      {
+        name: username,
+        password,
+      }
+    );
+  }
+
+  async resetPassword(nameOrEmail: string): Promise<void> {
+    await this.makeRequest('post', '/v1/auth/reset', {}, { nameOrEmail });
+  }
+
+  async completeResetPassword(
+    resetToken: string,
+    newPassword: string,
+    regenerateAccessToken: boolean
+  ): Promise<void> {
+    await this.makeRequest(
+      'post',
+      '/v1/auth/reset/complete',
+      {},
+      {
+        resetToken,
+        newPassword,
+        regenerateAccessToken,
+      }
+    );
+  }
+
+  async invalidateSession(): Promise<void> {
+    await this.makeRequest('get', '/v1/auth/invalidate');
+  }
+
+  async regenerateAccessToken(): Promise<string> {
+    const { newToken } = await this.makeRequest<{ newToken: string }>(
+      'get',
+      '/v1/auth/regenerate'
+    );
+    return newToken;
+  }
+
   async me(): Promise<User> {
     return await this.makeRequest('get', '/v1/me');
   }
@@ -124,6 +177,18 @@ export class PatClient {
 
   async adminUsage(): Promise<UsageInfo[]> {
     return await this.makeRequest('get', '/v1/admin/usage');
+  }
+
+  async makeUser(username: string, email: string): Promise<void> {
+    await this.makeRequest(
+      'post',
+      '/v1/admin/mkuser',
+      {},
+      {
+        name: username,
+        email,
+      }
+    );
   }
 
   async makeRequest<Type = {}>(
