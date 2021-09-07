@@ -126,7 +126,7 @@ export class PatClient {
     return await this.makeRequest('get', '/v1/folders', { parent });
   }
 
-  async createFolder(name: string, parent: string | undefined) {
+  async createFolder(name: string, parent: string | undefined): Promise<Folder> {
     return await this.makeRequest(
       'post',
       '/v1/folders/create',
