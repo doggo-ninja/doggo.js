@@ -68,7 +68,9 @@ export class PatClient {
             if (xhr.status >= 200 && xhr.status < 300) {
               resolve(json);
             } else {
-              reject(new Error(json.message || xhr.statusText || 'No error info'));
+              reject(
+                new Error(json.message || xhr.statusText || 'No error info')
+              );
             }
           } catch {
             reject(new Error('Unable to parse json'));
@@ -94,7 +96,8 @@ export class PatClient {
 
   async moveFile(
     shortName: string,
-    details: { originalName?: string; parent?: string | undefined }
+    details: { originalName?: string; parent?: string | undefined },
+    copy?: boolean
   ): Promise<File> {
     return await this.makeRequest(
       'post',
@@ -104,6 +107,7 @@ export class PatClient {
         shortName,
         ...details,
         forceMove: 'parent' in details,
+        copy,
       }
     );
   }
@@ -126,7 +130,10 @@ export class PatClient {
     return await this.makeRequest('get', '/v1/folders', { parent });
   }
 
-  async createFolder(name: string, parent: string | undefined): Promise<Folder> {
+  async createFolder(
+    name: string,
+    parent: string | undefined
+  ): Promise<Folder> {
     return await this.makeRequest(
       'post',
       '/v1/folders/create',
