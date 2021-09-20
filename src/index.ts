@@ -9,6 +9,9 @@ export interface File {
   updatedAt: number;
   size: number;
   parent?: string;
+  private: boolean;
+  ephemeralTimestamp: number | null;
+  hasPassword: boolean;
 }
 
 export interface Folder {
@@ -92,6 +95,31 @@ export class PatClient {
       xhr.setRequestHeader('Content-Type', 'application/octet-stream');
       xhr.send(file);
     });
+  }
+
+  async getDownloadToken(
+    shortName: string,
+    password?: string
+  ): Promise<string> {
+    const { downloadToken } = await this.makeRequest<{ downloadToken: string }>(
+      'post',
+      '/v1/files/token',
+      {},
+      { shortName, password }
+    );
+    return downloadToken;
+  }
+
+  async updateFileSharing(
+    isPrivate: boolean,
+    details: { ephemeralTimestamp: number | null; password: string | boolean }
+  ): Promise<File> {
+    return await this.makeRequest(
+      'post',
+      '/v1/files/sharing',
+      {},
+      { private: isPrivate, ...details }
+    );
   }
 
   async moveFile(
