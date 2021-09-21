@@ -52,49 +52,36 @@ export class PatClient {
     parent: string | undefined,
     onProgress?: (loaded: number, total: number) => void
   ): Promise<File> {
-    if (typeof 'window' === 'undefined') {
-      throw new Error('File uploads only supported in browser');
-    }
+    const url = new URL(`${this.baseUrl}/v1/upload`);
+    if (parent) url.searchParams.set('parent', parent);
+    url.searchParams.set('mimeType', file.type);
+    if (file.name) url.searchParams.set('originalName', file.name);
 
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
+    return await this.makeUploadRequest(
+      'post',
+      url.toString(),
+      file,
+      onProgress
+    );
+  }
 
-      xhr.upload.addEventListener('progress', event => {
-        onProgress && onProgress(event.loaded, event.total);
-      });
+  async replace(
+    shortName: string,
+    file: globalThis.File,
+    onProgress?: (loaded: number, total: number) => void
+  ): Promise<File> {
+    const url = new URL(
+      `${this.baseUrl}/v1/file/${encodeURIComponent(shortName)}`
+    );
+    url.searchParams.set('mimeType', file.type);
+    if (file.name) url.searchParams.set('originalName', file.name);
 
-      xhr.addEventListener('readystatechange', () => {
-        if (xhr.readyState === 4) {
-          const body = xhr.responseText;
-          try {
-            const json = JSON.parse(body);
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve(json);
-            } else {
-              reject(
-                new Error(json.message || xhr.statusText || 'No error info')
-              );
-            }
-          } catch {
-            reject(new Error('Unable to parse json'));
-          }
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        reject(new Error('An unexpected error occurred'));
-      });
-
-      const url = new URL(`${this.baseUrl}/v1/upload`);
-      if (parent) url.searchParams.set('parent', parent);
-      url.searchParams.set('mimeType', file.type);
-      if (file.name) url.searchParams.set('originalName', file.name);
-
-      xhr.open('POST', url.toString());
-      xhr.setRequestHeader('Authorization', `Bearer ${this.token}`);
-      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-      xhr.send(file);
-    });
+    return await this.makeUploadRequest(
+      'put',
+      url.toString(),
+      file,
+      onProgress
+    );
   }
 
   async getDownloadToken(
@@ -287,6 +274,52 @@ export class PatClient {
         email,
       }
     );
+  }
+
+  async makeUploadRequest<Type = {}>(
+    method: 'post' | 'put' | 'delete',
+    url: string,
+    file: globalThis.File,
+    onProgress?: (loaded: number, total: number) => void
+  ): Promise<Type> {
+    if (typeof 'window' === 'undefined') {
+      throw new Error('File uploads only supported in browser');
+    }
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', event => {
+        onProgress && onProgress(event.loaded, event.total);
+      });
+
+      xhr.addEventListener('readystatechange', () => {
+        if (xhr.readyState === 4) {
+          const body = xhr.responseText;
+          try {
+            const json = JSON.parse(body);
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(json);
+            } else {
+              reject(
+                new Error(json.message || xhr.statusText || 'No error info')
+              );
+            }
+          } catch {
+            reject(new Error('Unable to parse json'));
+          }
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('An unexpected error occurred'));
+      });
+
+      xhr.open(method, url);
+      xhr.setRequestHeader('Authorization', `Bearer ${this.token}`);
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      xhr.send(file);
+    });
   }
 
   async makeRequest<Type = {}>(
