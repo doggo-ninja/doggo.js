@@ -3,6 +3,7 @@
     "license": "MIT",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
+    "description": "Typed client for Doggo.Ninja's public API",
     "files": [
         "dist",
         "src"
@@ -26,9 +27,10 @@
     },
     "prettier": {
         "printWidth": 80,
-        "semi": true,
+        "semi": false,
         "singleQuote": true,
-        "trailingComma": "es5"
+        "trailingComma": "none",
+        "useTabs": true
     },
     "name": "doggo.js",
     "author": "Kognise",
@@ -53,5 +55,12 @@
     },
     "dependencies": {
         "isomorphic-unfetch": "^3.1.0"
-    }
+    },
+    "keywords": [
+        "doggo",
+        "doggo.ninja",
+        "api",
+        "client",
+        "typescript"
+    ]
 }
