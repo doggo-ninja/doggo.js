@@ -111,6 +111,7 @@ export class PatClient {
   }
 
   async updateFileSharing(
+    shortName: string,
     isPrivate: boolean,
     details: { ephemeralTimestamp: number | null; password: string | boolean }
   ): Promise<File> {
@@ -118,7 +119,7 @@ export class PatClient {
       'post',
       '/v1/files/sharing',
       {},
-      { private: isPrivate, ...details }
+      { shortName, private: isPrivate, ...details }
     );
   }
 
@@ -151,6 +152,13 @@ export class PatClient {
     return await this.makeRequest(
       'delete',
       `/v1/file/${encodeURIComponent(shortName)}`
+    );
+  }
+
+  async deleteFolder(id: string): Promise<File> {
+    return await this.makeRequest(
+      'delete',
+      `/v1/folder/${encodeURIComponent(id)}`
     );
   }
 
