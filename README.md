@@ -7,8 +7,12 @@ This package is unstable until Project Wolfsbane is fully released.
 ``` bash
 # NPM
 npm install doggo.js
+# PNPM
+pnpm install doggo.js
 # Yarn
 yarn add doggo.js
+# Bun
+bun add doggo.js
 ```
 
 ```ts

@@ -1,32 +1,33 @@
-import 'isomorphic-unfetch'
-
 export interface File {
 	url: string
 	shortName: string
 	originalName: string
 	mimeType: string
 	uncachedHits: number
-	updatedAt: number
 	size: number
-	parent?: string
-	private: boolean
-	ephemeralTimestamp: number | null
+	parentId: string | null
+	isPrivate: boolean
+	privatesAt: number | null
 	hasPassword: boolean
+	updatedAt: number
+	createdAt: number
 }
 
 export interface Folder {
 	id: string
 	name: string
-	parent?: string
+	parentId: string | null
+	createdAt: number
 }
 
 export type User = {
 	id: string
 	name: string
-	email?: string
-	admin: boolean
+	email: string | null
+	isAdmin: boolean
 	usage: number
 	preferredDomain: string
+	createdAt: number
 }
 
 export type UsageInfo = {
@@ -43,17 +44,17 @@ export class PatClient {
 		this.baseUrl = baseUrl ?? 'https://pat.doggo.ninja'
 	}
 
-	async files(parent: string | undefined): Promise<File[]> {
-		return await this.makeRequest('get', '/v1/files', { parent })
+	async files(parentId: string | null): Promise<File[]> {
+		return await this.makeRequest('get', '/v1/files', { parentId })
 	}
 
 	async upload(
 		file: globalThis.File,
-		parent: string | undefined,
+		parentId: string | null,
 		onProgress?: (loaded: number, total: number) => void
 	): Promise<File> {
 		const url = new URL(`${this.baseUrl}/v1/upload`)
-		if (parent) url.searchParams.set('parent', parent)
+		if (parentId) url.searchParams.set('parentId', parentId)
 		url.searchParams.set('mimeType', file.type)
 		if (file.name) url.searchParams.set('originalName', file.name)
 
@@ -95,7 +96,7 @@ export class PatClient {
 	async updateFileSharing(
 		shortName: string,
 		isPrivate: boolean,
-		details: { ephemeralTimestamp: number | null; password: string | boolean }
+		details: { privatesAt: number | null; password: string | boolean }
 	): Promise<File> {
 		return await this.makeRequest(
 			'post',
@@ -107,7 +108,7 @@ export class PatClient {
 
 	async moveFile(
 		shortName: string,
-		details: { originalName?: string; parent?: string | undefined },
+		details: { originalName?: string; parentId?: string | null },
 		copy?: boolean
 	): Promise<File> {
 		return await this.makeRequest(
@@ -117,7 +118,7 @@ export class PatClient {
 			{
 				shortName,
 				...details,
-				forceMove: 'parent' in details,
+				forceMove: 'parentId' in details,
 				copy
 			}
 		)
@@ -144,25 +145,25 @@ export class PatClient {
 		)
 	}
 
-	async folders(parent: string | undefined): Promise<Folder[]> {
-		return await this.makeRequest('get', '/v1/folders', { parent })
+	async folders(parentId: string | null): Promise<Folder[]> {
+		return await this.makeRequest('get', '/v1/folders', { parentId })
 	}
 
 	async createFolder(
 		name: string,
-		parent: string | undefined
+		parentId: string | null
 	): Promise<Folder> {
 		return await this.makeRequest(
 			'post',
 			'/v1/folders/create',
 			{},
-			{ name, parent }
+			{ name, parentId }
 		)
 	}
 
 	async moveFolder(
 		id: string,
-		details: { name?: string; parent?: string | undefined }
+		details: { name?: string; parentId?: string | null }
 	): Promise<File> {
 		return await this.makeRequest(
 			'post',
@@ -171,7 +172,7 @@ export class PatClient {
 			{
 				id,
 				...details,
-				forceMove: 'parent' in details
+				forceMove: 'parentId' in details
 			}
 		)
 	}
@@ -317,7 +318,7 @@ export class PatClient {
 	async makeRequest<Type = {}>(
 		method: 'get' | 'post' | 'put' | 'delete',
 		path: string,
-		query: Record<string, string | undefined> = {},
+		query: Record<string, string | null> = {},
 		body?: Record<string, unknown>
 	): Promise<Type> {
 		const headers: HeadersInit = {
