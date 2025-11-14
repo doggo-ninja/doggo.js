@@ -212,8 +212,8 @@ export class PatClient {
 		}
 	}
 
-	async resetPassword(nameOrEmail: string): Promise<void> {
-		await this.makeRequest('post', '/v1/auth/reset', {}, { nameOrEmail })
+	async resetPassword(nameOrEmail?: string): Promise<{ censoredEmail: string }> {
+		return await this.makeRequest('post', '/v1/auth/reset', {}, { nameOrEmail })
 	}
 
 	async completeResetPassword(
