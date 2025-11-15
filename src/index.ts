@@ -87,8 +87,8 @@ export class PatClient {
 	async getDownloadToken(
 		shortName: string,
 		password?: string
-	): Promise<string> {
-		const { downloadToken } = await this.makeRequest<{ downloadToken: string }>(
+	): Promise<string | null> {
+		const { downloadToken } = await this.makeRequest<{ downloadToken: string | null }>(
 			'post',
 			'/v1/files/token',
 			{},
