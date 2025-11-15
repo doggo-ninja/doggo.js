@@ -48,6 +48,10 @@ export class PatClient {
 		return await this.makeRequest('get', '/v1/files', { parentId })
 	}
 
+	async recentFiles(count: number): Promise<File[]> {
+		return await this.makeRequest('get', '/v1/files', { count: count.toString() })
+	}
+
 	async upload(
 		file: globalThis.File,
 		parentId: string | null,
